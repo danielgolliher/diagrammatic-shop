@@ -21,6 +21,7 @@
     <nav class="nav left" aria-label="Sections">
       <a href="#atelier">The Atelier</a>
       <a href="#collection">The Collection</a>
+      <a href="catalogue.html">The Catalogue</a>
     </nav>
     <a class="wordmark" href="#top" aria-label="Diagrammatic and Company, home">
       <span class="wm">Diagrammatic</span>
@@ -28,6 +29,7 @@
     </a>
     <nav class="nav right" aria-label="Shop">
       <a href="#method" class="hide-m">Our Method</a>
+      <a href="catalogue.html" class="show-m">Catalogue</a>
       <button class="bag-btn" id="open-bag" type="button" aria-haspopup="dialog">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M5 8h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
         Bag <span class="bag-count" id="bag-count">(0)</span>
@@ -44,11 +46,11 @@
       <p class="sub">A vow, a verse, a first line, a family motto. Write it below and we will diagram it in the Reed–Kellogg manner, then make it into something to keep.</p>
       <form class="compose" id="compose" autocomplete="off">
         <label for="sentence" class="vh">Your sentence</label>
-        <input id="sentence" name="sentence" maxlength="220" spellcheck="true" placeholder="Write your sentence here…" value="The old man walked slowly to the village.">
+        <input id="sentence" name="sentence" maxlength="360" spellcheck="true" placeholder="Write your sentence here…" value="The old man walked slowly to the village.">
         <button class="btn" type="submit">Compose</button>
       </form>
       <p class="compose-error" id="compose-error" role="alert"></p>
-      <p class="hint">Or begin with <button type="button" data-try="Call me Ishmael.">Call me Ishmael.</button> · <button type="button" data-try="We hold these truths to be self-evident.">We hold these truths…</button> · <button type="button" data-try="I love you more than words can say.">I love you more than words can say.</button></p>
+      <p class="hint">Or choose from <a href="catalogue.html">the Catalogue</a>: <button type="button" data-src="moby-dick-call-me-ishmael">Call me Ishmael.</button> · <button type="button" data-src="the-declaration-of-independence-we-hold-these">We hold these truths…</button> · <button type="button" data-src="walden-the-mass-of">The mass of men lead lives of quiet desperation.</button></p>
     </div>
   </section>
 
@@ -74,6 +76,17 @@
       <h2 class="title" id="collection-title">Your Sentence, Six Ways</h2>
       <div class="ornament"><i>✦</i></div>
       <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <section class="from-cat" id="from-catalogue" aria-labelledby="cat-title">
+    <div class="wrap">
+      <p class="eyebrow">The Catalogue</p>
+      <h2 class="title" id="cat-title">Sentences Worth Keeping</h2>
+      <div class="ornament"><i>✦</i></div>
+      <p class="direction" style="text-align:center;max-width:38em;margin:18px auto 0;color:var(--ink-2)">From the founding documents and the books on the shelf, each checked against its source and ready to commission, with its source set beneath it if you like.</p>
+      <div class="entries" id="featured"></div>
+      <p class="more"><a class="btn ghost" href="catalogue.html">Browse the whole Catalogue</a></p>
     </div>
   </section>
 

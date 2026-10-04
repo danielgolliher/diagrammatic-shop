@@ -1,14 +1,13 @@
 // Diagrammatic & Co. — the shop window.
-import { tagText } from '../engine/tagger.js';
-import { parseSentence, resetIds } from '../engine/parser.js';
-import { Draughtsman, toSVG } from '../engine/layout.js';
 import { analyse } from '../engine/analysis.js';
 import { PRODUCTS, byId, defaultOptions, lookup, optionLabel, money, LIMITS } from '../shared/catalog.js';
-import { parseDiagram, writePrims, checkWords } from '../shared/svgprims.js';
+import { CATALOGUE, byEntry } from '../shared/catalogue.js';
+import { writePrims } from '../shared/svgprims.js';
 import { compose, orientation, MIN_TEXT_INCHES } from '../shared/compose.js';
 import { mockup, PREVIEW } from './mockups.js';
 import { CONFIG } from './config.js';
 import { COUNTRIES, REGIONS } from './places.js';
+import { measure, textEl, draw, fontsReady } from './draw.js';
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -16,42 +15,10 @@ const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
   set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) { /* private window */ } },
 };
-
-// --- type ----------------------------------------------------------------
-const ctx = document.createElement('canvas').getContext('2d');
-const widths = new Map();
-const FAMILY = { italic: 'italic {s}px "IM Fell English"', roman: '{s}px "IM Fell English"', sc: '{s}px "IM Fell English SC"' };
-function measure(s, size, style = 'italic') {
-  const k = style + size + '|' + s;
-  let w = widths.get(k);
-  if (w == null) { ctx.font = FAMILY[style].replace('{s}', size) + ', Georgia, serif'; w = ctx.measureText(s).width; widths.set(k, w); }
-  return w;
-}
-const pen = new Draughtsman(measure);
-function textEl(s, x, y, size, style, anchor, fill) {
-  const fam = style === 'sc' ? "'IM Fell English SC'" : "'IM Fell English'";
-  return `<text x="${x.toFixed(1)}" y="${y.toFixed(1)}" font-size="${size.toFixed(2)}" font-family="${fam}, Georgia, serif" font-style="${style === 'italic' ? 'italic' : 'normal'}" text-anchor="${anchor === 'middle' ? 'middle' : 'start'}" fill="${fill}">${esc(s)}</text>`;
-}
-
-// --- drawings ------------------------------------------------------------
-const drawings = new Map();
-function draw(sentence) {
-  if (drawings.has(sentence)) return drawings.get(sentence);
-  resetIds();
-  const sens = tagText(sentence);
-  if (!sens.length) throw new Error('Write a sentence first.');
-  const sen = sens[0];
-  const tree = parseSentence(sen.tokens, sen.end);
-  const svg = toSVG(pen.sentence(tree), { title: '' }).svg;
-  const d = parseDiagram(svg);
-  checkWords(d.prims, sentence);
-  const out = { sentence, svg, tree, w: d.w, h: d.h, prims: d.prims, multiple: sens.length > 1, firstSentence: sen.raw };
-  drawings.set(sentence, out);
-  return out;
-}
+const entryFor = (sentence, id) => (id && byEntry[id] && byEntry[id].text === sentence ? byEntry[id] : CATALOGUE.find(e => e.text === sentence) || null);
 
 const PX_PER_IN = 100;
-function artwork(drawing, productId, opts, caption, { preview = true } = {}) {
+function artwork(drawing, productId, opts, caption, { preview = true, cite = null } = {}) {
   const base = byId[productId];
   const pv = preview && PREVIEW[productId];
   const product = pv ? { ...base, art: pv.art, area: pv.area } : base;
@@ -60,16 +27,18 @@ function artwork(drawing, productId, opts, caption, { preview = true } = {}) {
   if (orient === 'landscape' && inches[1] > inches[0]) inches = [inches[1], inches[0]];
   const W = inches[0] * PX_PER_IN, H = inches[1] * PX_PER_IN;
   const diagram = { w: drawing.w, h: drawing.h, write: ({ stroke, knock, ink }) => writePrims(drawing.prims, { ink, knock, stroke }) };
-  const out = compose({ product, opts, W, H, inches, diagram, caption: caption ? drawing.sentence : null, text: textEl, measure });
+  const out = compose({ product, opts, W, H, inches, diagram, caption: caption ? drawing.sentence : null, attribution: caption ? cite : null, text: textEl, measure });
   return { ...out, orient };
 }
-function legible(drawing, productId, opts, caption) {
-  return artwork(drawing, productId, opts, caption, { preview: false }).textInches >= MIN_TEXT_INCHES;
+function legible(drawing, productId, opts, caption, cite = null) {
+  return artwork(drawing, productId, opts, caption, { preview: false, cite }).textInches >= MIN_TEXT_INCHES;
 }
-function picture(drawing, productId, opts, caption) {
-  const a = artwork(drawing, productId, opts, caption);
+function picture(drawing, productId, opts, caption, cite = null) {
+  const a = artwork(drawing, productId, opts, caption, { cite });
   return mockup(productId, opts, a.svg, a.orient);
 }
+// the citation printed beneath the sentence, when it comes from the Catalogue and the customer wants it
+const currentCite = () => (state.entry && state.withCite ? state.entry.cite : null);
 
 // --- state ---------------------------------------------------------------
 const params = new URLSearchParams(location.search);
@@ -81,12 +50,15 @@ const state = {
   qty: 1,
   figure: false,
   drawing: null,
+  entry: null,
+  withCite: true,
 };
+state.entry = entryFor(state.sentence, params.get('src'));
 let bag = store.get('dco-bag', []).filter(it => lookup(it.product, it.opts));
 let dest = store.get('dco-dest', { country: 'US', state: 'NY' });
 
 // --- composing -----------------------------------------------------------
-function composeSentence(text) {
+function composeSentence(text, sourceId = null) {
   const s = text.replace(/\s+/g, ' ').trim();
   const err = $('#compose-error');
   err.textContent = '';
@@ -96,6 +68,7 @@ function composeSentence(text) {
     const d = draw(s);
     state.sentence = s;
     state.drawing = d;
+    state.entry = entryFor(s, sourceId);
     if (d.multiple) err.textContent = 'We set one sentence per piece; the first has been drawn.';
   } catch (e) {
     console.error(e);
@@ -105,6 +78,7 @@ function composeSentence(text) {
   store.set('dco-sentence', state.sentence);
   const u = new URL(location.href);
   u.searchParams.set('s', state.sentence);
+  if (state.entry) u.searchParams.set('src', state.entry.id); else u.searchParams.delete('src');
   history.replaceState(null, '', u);
   renderAll();
   return true;
@@ -129,7 +103,7 @@ function renderStage() {
     svg.querySelectorAll('rect').forEach(el => el.setAttribute('fill', '#fffdf8'));
     svg.setAttribute('aria-label', `The diagram of “${d.sentence}”`);
   } else {
-    stage.innerHTML = picture(d, state.product, state.opts[state.product], state.caption);
+    stage.innerHTML = picture(d, state.product, state.opts[state.product], state.caption, currentCite());
     stage.querySelector('svg').setAttribute('aria-label', `${byId[state.product].name} bearing the diagram of “${d.sentence}”`);
   }
   $('#toggle-figure').textContent = state.figure ? 'Return to the piece' : 'View the figure alone';
@@ -144,7 +118,7 @@ function renderThumbs() {
     b.className = 'thumb';
     b.setAttribute('aria-pressed', String(p.id === state.product));
     b.setAttribute('aria-label', p.name);
-    b.innerHTML = picture(state.drawing, p.id, state.opts[p.id], state.caption);
+    b.innerHTML = picture(state.drawing, p.id, state.opts[p.id], state.caption, currentCite());
     b.addEventListener('click', () => choose(p.id, false));
     host.appendChild(b);
   }
@@ -159,7 +133,7 @@ function renderGrid() {
     const c = document.createElement('button');
     c.type = 'button';
     c.className = 'card';
-    c.innerHTML = `<div class="pic">${picture(state.drawing, p.id, state.opts[p.id], true)}</div><p class="k">${esc(p.kicker)}</p><p class="n">${esc(p.name)}</p><p class="p">from ${money(minPrice(p))}</p>`;
+    c.innerHTML = `<div class="pic">${picture(state.drawing, p.id, state.opts[p.id], true, currentCite())}</div><p class="k">${esc(p.kicker)}</p><p class="n">${esc(p.name)}</p><p class="p">from ${money(minPrice(p))}</p>`;
     c.setAttribute('aria-label', `${p.name}, from ${money(minPrice(p))}`);
     c.addEventListener('click', () => choose(p.id, true));
     host.appendChild(c);
@@ -181,14 +155,14 @@ function renderPanel() {
   const opts = state.opts[p.id];
   const found = lookup(p.id, opts);
   const d = state.drawing;
-  const complete = !d.prims.some(x => x.loose);
-  const ok = complete && legible(d, p.id, opts, state.caption);
+  const complete = d.complete;
+  const ok = complete && legible(d, p.id, opts, state.caption, currentCite());
   const panel = $('#panel');
   const optHTML = p.options.map(o => {
     const cur = o.values.find(v => v.v === opts[o.key]);
     const btns = o.values.map(v => {
       const sel = v.v === opts[o.key];
-      const fits = legible(d, p.id, { ...opts, [o.key]: v.v }, state.caption);
+      const fits = legible(d, p.id, { ...opts, [o.key]: v.v }, state.caption, currentCite());
       const label = v.label || v.v;
       if (v.swatch) return `<button type="button" class="choice swatch" role="radio" aria-checked="${sel}" aria-label="${esc(label)}" title="${esc(label)}" data-k="${o.key}" data-v="${esc(v.v)}"><span style="background:${v.swatch}"></span></button>`;
       return `<button type="button" class="choice" role="radio" aria-checked="${sel}" data-k="${o.key}" data-v="${esc(v.v)}"${fits ? '' : ' title="Too fine to read at this size"'}>${esc(label)}</button>`;
@@ -200,9 +174,10 @@ function renderPanel() {
     <h2>${esc(p.name)}</h2>
     <p class="price">${money(found.variant.price)}</p>
     <p class="blurb">${esc(p.blurb)}</p>
-    <div class="sentence-card"><div class="lbl"><span>Your sentence</span><button type="button" id="edit-sentence">Change</button></div><div class="s">${esc(d.sentence)}</div></div>
+    <div class="sentence-card"><div class="lbl"><span>${state.entry ? 'From the Catalogue' : 'Your sentence'}</span><button type="button" id="edit-sentence">Change</button></div><div class="s">${esc(d.sentence)}</div>${state.entry ? `<div class="cite">— ${esc(state.entry.cite)}</div>` : ''}</div>
     ${optHTML}
     <label class="check"><input type="checkbox" id="caption" ${state.caption ? 'checked' : ''}> <span>Set the sentence in italic beneath the figure</span></label>
+    ${state.entry && state.caption ? `<label class="check"><input type="checkbox" id="with-cite" ${state.withCite ? 'checked' : ''}> <span>…with its source beneath it</span></label>` : ''}
     <div class="buy">
       <div class="qty" aria-label="Quantity"><button type="button" data-q="-1" aria-label="One fewer">−</button><output id="qty">${state.qty}</output><button type="button" data-q="1" aria-label="One more">+</button></div>
       <button class="btn" type="button" id="add" ${ok ? '' : 'disabled'}>Add to Bag — ${money(found.variant.price * state.qty)}</button>
@@ -220,9 +195,11 @@ function renderPanel() {
     state.opts[p.id] = { ...state.opts[p.id], [b.dataset.k]: b.dataset.v };
     renderStage(); renderPanel();
     const t = document.querySelectorAll('#thumbs .thumb')[PRODUCTS.indexOf(p)];
-    if (t) t.innerHTML = picture(state.drawing, p.id, state.opts[p.id], state.caption);
+    if (t) t.innerHTML = picture(state.drawing, p.id, state.opts[p.id], state.caption, currentCite());
   }));
   $('#caption').addEventListener('change', e => { state.caption = e.target.checked; renderStage(); renderPanel(); renderThumbs(); });
+  const wc = $('#with-cite');
+  if (wc) wc.addEventListener('change', e => { state.withCite = e.target.checked; renderStage(); renderPanel(); renderThumbs(); });
   panel.querySelectorAll('[data-q]').forEach(b => b.addEventListener('click', () => {
     state.qty = Math.max(1, Math.min(LIMITS.qtyPerItem, state.qty + Number(b.dataset.q)));
     $('#qty').textContent = state.qty;
@@ -232,15 +209,32 @@ function renderPanel() {
   $('#edit-sentence').addEventListener('click', () => { const i = $('#sentence'); i.focus(); i.select(); window.scrollTo({ top: 0, behavior: 'smooth' }); });
 }
 
+// --- the Catalogue on the front page -------------------------------------
+function renderFeatured() {
+  const host = $('#featured');
+  if (!host) return;
+  const picks = CATALOGUE.filter(e => e.featured).slice(0, 6);
+  host.innerHTML = picks.map(e => `<article class="entry"><a class="entry-link" href="?s=${encodeURIComponent(e.text)}&src=${encodeURIComponent(e.id)}" data-entry="${esc(e.id)}">
+      <p class="entry-text">${esc(e.text)}</p><p class="entry-cite">${esc(e.cite)}</p><span class="entry-cta">Commission this sentence <span aria-hidden="true">→</span></span></a></article>`).join('');
+  host.querySelectorAll('[data-entry]').forEach(a => a.addEventListener('click', ev => {
+    ev.preventDefault();
+    const e = byEntry[a.dataset.entry];
+    $('#sentence').value = e.text;
+    if (composeSentence(e.text, e.id)) $('#atelier').scrollIntoView({ behavior: 'smooth' });
+  }));
+}
+
 // --- the bag -------------------------------------------------------------
 function saveBag() { store.set('dco-bag', bag); $('#bag-count').textContent = `(${bag.reduce((n, it) => n + it.qty, 0)})`; }
 
 function addToBag() {
   const p = byId[state.product];
   const opts = { ...state.opts[p.id] };
-  const same = bag.find(it => it.product === p.id && it.sentence === state.sentence && it.caption === state.caption && JSON.stringify(it.opts) === JSON.stringify(opts));
+  const source = state.entry ? state.entry.id : null;
+  const cite = !!(state.entry && state.withCite && state.caption);
+  const same = bag.find(it => it.product === p.id && it.sentence === state.sentence && it.caption === state.caption && !!it.cite === cite && JSON.stringify(it.opts) === JSON.stringify(opts));
   if (same) same.qty = Math.min(LIMITS.qtyPerItem, same.qty + state.qty);
-  else bag.push({ id: Math.random().toString(36).slice(2, 10), product: p.id, opts, qty: state.qty, sentence: state.sentence, caption: state.caption });
+  else bag.push({ id: Math.random().toString(36).slice(2, 10), product: p.id, opts, qty: state.qty, sentence: state.sentence, caption: state.caption, source, cite });
   if (bag.length > LIMITS.itemsPerOrder) { bag.pop(); toast(`At most ${LIMITS.itemsPerOrder} pieces to an order`); }
   saveBag();
   const b = $('#open-bag'); b.classList.remove('bump'); void b.offsetWidth; b.classList.add('bump');
@@ -262,11 +256,12 @@ function renderBag() {
     const p = byId[it.product];
     const f = lookup(it.product, it.opts);
     let pic = '';
-    try { pic = picture(draw(it.sentence), it.product, it.opts, it.caption); } catch (e) { /* drawn at checkout */ }
+    const itCite = it.cite && it.source && byEntry[it.source] ? byEntry[it.source].cite : null;
+    try { pic = picture(draw(it.sentence), it.product, it.opts, it.caption, itCite); } catch (e) { /* drawn at checkout */ }
     const row = document.createElement('div');
     row.className = 'line';
     row.innerHTML = `<div class="pic">${pic}</div>
-      <div><p class="nm">${esc(p.name)}</p><p class="op">${esc(optionLabel(p, it.opts))}${it.caption ? '' : ' · without caption'}</p><p class="se">${esc(it.sentence)}</p>
+      <div><p class="nm">${esc(p.name)}</p><p class="op">${esc(optionLabel(p, it.opts))}${it.caption ? '' : ' · without caption'}</p><p class="se">${esc(it.sentence)}</p>${itCite ? `<p class="op">— ${esc(itCite)}</p>` : ''}
         <div class="ctl"><div class="qty"><button type="button" data-d="-1" aria-label="One fewer">−</button><output>${it.qty}</output><button type="button" data-d="1" aria-label="One more">+</button></div><button type="button" class="rm">Remove</button></div></div>
       <div class="amt">${money(f.variant.price * it.qty)}</div>`;
     row.querySelectorAll('[data-d]').forEach(b => b.addEventListener('click', () => {
@@ -333,7 +328,7 @@ async function checkout() {
   btn.disabled = true;
   btn.textContent = 'One moment…';
   try {
-    const items = bag.map(it => ({ product: it.product, opts: it.opts, qty: it.qty, sentence: it.sentence, caption: it.caption, svg: draw(it.sentence).svg }));
+    const items = bag.map(it => ({ product: it.product, opts: it.opts, qty: it.qty, sentence: it.sentence, caption: it.caption, source: it.source || undefined, cite: !!it.cite, svg: draw(it.sentence).svg }));
     const r = await fetch(CONFIG.apiBase + '/api/checkout', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ items, country: dest.country, state: dest.state, site: location.origin + location.pathname }) });
     const j = await r.json();
     if (!r.ok || !j.url) throw new Error(j.error || 'The counting-house did not answer.');
@@ -372,25 +367,22 @@ function toast(msg) {
 
 // --- boot ----------------------------------------------------------------
 async function boot() {
-  try {
-    await Promise.race([
-      Promise.all(['italic 17px "IM Fell English"', '17px "IM Fell English"', '17px "IM Fell English SC"'].map(f => document.fonts.load(f))),
-      new Promise(r => setTimeout(r, 3000)),
-    ]);
-  } catch (e) { /* fall back to Georgia's measures */ }
-  widths.clear();
+  await fontsReady();
   $('#sentence').value = state.sentence;
-  if (!composeSentence(state.sentence)) composeSentence('The old man walked slowly to the village.');
+  if (!composeSentence(state.sentence, params.get('src'))) composeSentence('The old man walked slowly to the village.');
   saveBag();
 
   $('#compose').addEventListener('submit', e => {
     e.preventDefault();
     if (composeSentence($('#sentence').value)) $('#atelier').scrollIntoView({ behavior: 'smooth' });
   });
-  document.querySelectorAll('[data-try]').forEach(b => b.addEventListener('click', () => {
-    $('#sentence').value = b.dataset.try;
-    if (composeSentence(b.dataset.try)) $('#atelier').scrollIntoView({ behavior: 'smooth' });
+  document.querySelectorAll('[data-src]').forEach(b => b.addEventListener('click', () => {
+    const e = byEntry[b.dataset.src];
+    if (!e) return;
+    $('#sentence').value = e.text;
+    if (composeSentence(e.text, e.id)) $('#atelier').scrollIntoView({ behavior: 'smooth' });
   }));
+  renderFeatured();
   $('#toggle-figure').addEventListener('click', () => { state.figure = !state.figure; renderStage(); });
   $('#open-bag').addEventListener('click', openBag);
   $('#close-bag').addEventListener('click', closeBag);

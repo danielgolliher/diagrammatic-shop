@@ -156,4 +156,4 @@ export function optionLabel(product, opts) {
 }
 export const money = cents => '$' + (cents / 100).toFixed(cents % 100 ? 2 : 0);
 
-export const LIMITS = { sentenceChars: 220, svgBytes: 120000, itemsPerOrder: 12, qtyPerItem: 20 };
+export const LIMITS = { sentenceChars: 360, svgBytes: 120000, itemsPerOrder: 12, qtyPerItem: 20 };

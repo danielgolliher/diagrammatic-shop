@@ -10,7 +10,8 @@
 //   GET  /api/health           which keys are in place
 
 import { byId, lookup, optionLabel, LIMITS, CURRENCY } from '../../shared/catalog.js';
-import { parseDiagram, checkWords, DiagramError } from '../../shared/svgprims.js';
+import { byEntry } from '../../shared/catalogue.js';
+import { parseDiagram, checkWords, checkCoverage, DiagramError } from '../../shared/svgprims.js';
 import * as stripe from './stripe.js';
 import * as printful from './printful.js';
 import { renderPrint } from './print.js';
@@ -118,9 +119,13 @@ async function checkout(request, env, url) {
     const d = parseDiagram(svg);           // throws DiagramError → 400
     checkWords(d.prims, sentence);
     if (d.prims.some(x => x.loose)) throw new HttpError(400, `Item ${i + 1}: not every word found its place in the figure.`);
+    checkCoverage(d.prims, sentence);
+    // a sentence from the Catalogue may carry its source; the wording must match exactly
+    const entry = raw.source && byEntry[String(raw.source)];
+    const attribution = entry && entry.text === sentence && raw.cite !== false && raw.caption !== false ? entry.cite : null;
     items.push({
       product: found.product.id, opts: found.opts, key: found.key, pf: found.variant.pf, price: found.variant.price,
-      qty, sentence, caption: raw.caption !== false, svg,
+      qty, sentence, caption: raw.caption !== false, attribution, svg,
     });
   }
 
@@ -276,7 +281,7 @@ async function orderStatus(url, env) {
   }
   if (session && session.metadata && session.metadata.draft_id) {
     const d = await env.DB.prepare('SELECT data FROM drafts WHERE id = ?').bind(session.metadata.draft_id).first();
-    if (d) out.items = JSON.parse(d.data).items.map(it => ({ product: it.product, opts: it.opts, qty: it.qty, sentence: it.sentence }));
+    if (d) out.items = JSON.parse(d.data).items.map(it => ({ product: it.product, opts: it.opts, qty: it.qty, sentence: it.sentence, cite: it.attribution || null }));
   }
   return json(out);
 }

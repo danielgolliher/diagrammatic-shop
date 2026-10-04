@@ -148,6 +148,34 @@ export function checkWords(prims, sentence) {
   }
 }
 
+// The other direction: every word of the sentence must appear in the figure,
+// so nothing the customer wrote can go missing from what is printed.
+const EXPANSIONS = { "won't": ['will', 'not'], "can't": ['can', 'not'], "shan't": ['shall', 'not'], "ain't": ['am', 'not'] };
+export function checkCoverage(prims, sentence) {
+  const pieces = [];
+  for (const p of prims) if (p.t === 'text' && !p.loose) for (const w of norm(p.s.replace(/[()…]/g, ' ')).split(/\s+/)) if (w) pieces.push(w.replace(/^['\-]+|['\-]+$/g, ''));
+  const have = new Set(pieces);
+  const joined = (w) => {
+    // a word split over a bent or stepped line: two pieces that make it up
+    for (const a of pieces) if (w.startsWith(a) && a.length < w.length && have.has(w.slice(a.length))) return true;
+    return false;
+  };
+  const drawn = w => have.has(w) || joined(w);
+  for (const raw of norm(sentence.replace(/[…]/g, ' ')).split(/\s+/)) {
+    const w = raw.replace(/^['\-]+|['\-]+$/g, '');
+    if (!w || !/[a-z0-9]/.test(w)) continue;
+    if (drawn(w)) continue;
+    if (w.includes("'")) {
+      if (EXPANSIONS[w] && EXPANSIONS[w].every(drawn)) continue;
+      const [head, tail] = [w.slice(0, w.indexOf("'")), w.slice(w.indexOf("'") + 1)];
+      const base = tail === 't' ? head.replace(/n$/, '') : head;      // don't → do, isn't → is
+      if ((base && drawn(base)) || (tail && drawn(tail))) continue;
+    }
+    if (w.includes('-') && w.split('-').every(x => !x || drawn(x))) continue;
+    throw new DiagramError(`the word “${w}” is missing from the figure`);
+  }
+}
+
 // --- writing out ----------------------------------------------------------
 // opts: { ink, knock, stroke, toPath(text, x, y, size, rotDeg, role) → path data | null }
 export function writePrims(prims, opts) {

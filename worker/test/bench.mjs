@@ -16,7 +16,7 @@ const pen = new Draughtsman((s, size) => F.italic.getAdvanceWidth(s, size))
 const measure = (s, size, st='italic') => (O[st]||O.italic).width(s, size)
 const outline = (text, x, y, size, rot, st='italic') => (O[st]||O.italic).group(text, x, y, size, rot)
 const outlineOld = (text, x, y, size, rot, st='italic') => { const p = (F[st]||F.italic).getPath(text, 0, 0, size); const a = rot*Math.PI/180, ca=Math.cos(a), sa=Math.sin(a); let d=''; for (const c of p.commands) { const P=(px,py)=>`${(x+px*ca-py*sa).toFixed(1)} ${(y+px*sa+py*ca).toFixed(1)}`; if(c.type==='M')d+='M'+P(c.x,c.y); else if(c.type==='L')d+='L'+P(c.x,c.y); else if(c.type==='Q')d+='Q'+P(c.x1,c.y1)+' '+P(c.x,c.y); else if(c.type==='C')d+='C'+P(c.x1,c.y1)+' '+P(c.x2,c.y2)+' '+P(c.x,c.y); else d+='Z' } return d }
-for (const s of ['The old man walked slowly to the village.', 'When I was young, I lived in a small village near the sea, where my father worked as a fisherman.']) {
+for (const s of ['The old man walked slowly to the village.', 'We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness.', 'We the People of the United States, in Order to form a more perfect Union, establish Justice, insure domestic Tranquility, provide for the common defence, promote the general Welfare, and secure the Blessings of Liberty to ourselves and our Posterity, do ordain and establish this Constitution for the United States of America.']) {
   resetIds(); const sen = tagText(s)[0]
   const svg = toSVG(pen.sentence(parseSentence(sen.tokens, sen.end)), { title: '' }).svg
   for (const pid of ['plate', 'mug', 'tee']) {

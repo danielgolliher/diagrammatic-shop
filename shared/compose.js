@@ -35,7 +35,7 @@ export function wrap(text, maxW, size, style, measure) {
  *   measure(s, size, style) → advance width
  * Returns { svg, textInches, scale }
  */
-export function compose({ product, opts, W, H, inches, diagram, caption, plateNo = 'I', text, measure }) {
+export function compose({ product, opts, W, H, inches, diagram, caption, attribution = null, plateNo = 'I', text, measure }) {
   const spec = product.art;
   const inkName = product.ink(opts);
   const ink = INK[inkName];
@@ -72,7 +72,11 @@ export function compose({ product, opts, W, H, inches, diagram, caption, plateNo
     const lead = capSize * 1.32;
     const figSize = capSize * 0.82;
     const figH = spec.fig && caption ? figSize * 1.6 : 0;
-    const capH = capLines.length ? figH + lead * capLines.length : 0;
+    // the source, in small capitals, beneath the sentence
+    const citeSize = capSize * 0.78;
+    const citeLines = attribution && capLines.length ? wrap(`— ${attribution}`, w0 * 0.96, citeSize, 'sc', measure) : [];
+    const citeH = citeLines.length ? citeSize * 0.7 + citeSize * 1.3 * citeLines.length : 0;
+    const capH = capLines.length ? figH + lead * capLines.length + citeH : 0;
     const gap = capLines.length ? Math.max(capSize * 1.4, h0 * 0.06) : 0;
 
     // the diagram, as large as the box allows within a sensible type size
@@ -98,6 +102,10 @@ export function compose({ product, opts, W, H, inches, diagram, caption, plateNo
     for (const ln of capLines) {
       y += lead * (ln === capLines[0] ? 0.85 : 1);
       out += text(ln, cx, y, capSize, 'italic', 'middle', ink);
+    }
+    if (citeLines.length) {
+      y += citeSize * 0.7;
+      for (const ln of citeLines) { y += citeSize * 1.3; out += text(ln, cx, y, citeSize, 'sc', 'middle', ink); }
     }
   }
   if (spec.mark) {

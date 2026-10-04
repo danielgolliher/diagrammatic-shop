@@ -181,6 +181,31 @@ async function main() {
     const os = await r.json();
     ok(r.ok && os.paid && os.status === 'draft' && os.production === 'draft' && os.items.length === 4 && os.email === 're••••@example.com', `status page data (${os.status}, ${os.email})`);
 
+    console.log('\nThe Catalogue');
+    const decl = 'We hold these truths to be self-evident, that all men are created equal, that they are endowed by their Creator with certain unalienable Rights, that among these are Life, Liberty and the pursuit of Happiness.';
+    const ish = 'Call me Ishmael.';
+    r = await post('/api/checkout', { country: 'US', state: 'NY', items: [
+      { product: 'plate', opts: { frame: 'White', size: '18″×24″' }, qty: 1, sentence: decl, caption: true, source: 'the-declaration-of-independence-we-hold-these', cite: true, svg: diagram(decl) },
+      { product: 'card', opts: { size: '5″×7″' }, qty: 1, sentence: ish, caption: true, source: 'the-declaration-of-independence-we-hold-these', cite: true, svg: diagram(ish) },
+      { product: 'mug', opts: { size: '11 oz' }, qty: 1, sentence: ish, caption: true, source: 'moby-dick-call-me-ishmael', cite: true, attribution: 'Somebody Else', svg: diagram(ish) },
+    ] });
+    c = await r.json();
+    ok(r.ok && c.id, 'the Preamble-length Declaration sentence is accepted');
+    st = await mockState();
+    const cs = st.sessions[c.id];
+    await fetch(MOCK + '/_pay/' + cs.id, { method: 'POST', body: JSON.stringify({ ...paid, id: cs.id, payment_intent: 'pi_cat', metadata: cs.metadata, client_reference_id: cs.client_reference_id }) });
+    const os2 = await (await fetch(API + '/api/order?session_id=' + cs.id)).json();
+    ok(os2.items && os2.items[0].cite === 'The Declaration of Independence, 1776', 'a catalogue sentence carries its source');
+    ok(os2.items && os2.items[1].cite === null, 'a source that does not match the sentence is ignored');
+    ok(os2.items && os2.items[2].cite === 'Herman Melville, Moby-Dick, 1851', 'the source comes from the catalogue, never from the browser');
+    ev = signedEvent({ ...cs, ...paid, id: cs.id, metadata: cs.metadata, client_reference_id: cs.client_reference_id, payment_intent: 'pi_cat' });
+    r = await post('/api/stripe/webhook', ev.payload, { 'stripe-signature': ev.header });
+    st = await mockState();
+    const catFiles = st.files.filter(f => f.name.startsWith(cs.metadata.draft_id));
+    ok(r.ok && catFiles.length === 3 && catFiles.every(f => f.status === 200), 'print files for catalogue pieces are made');
+    const declPlate = readFileSync(here + 'out/' + catFiles[0].name, 'utf8');
+    ok(/viewBox="0 0 3600 2400"/.test(declPlate) && declPlate.length > 200000, `the Declaration plate is drawn in full (${(declPlate.length / 1024).toFixed(0)} KB)`);
+
     console.log('\nFailures');
     // Printful refuses permanently → automatic refund
     r = await post('/api/checkout', { country: 'US', state: 'CA', items: [bag[2]] });

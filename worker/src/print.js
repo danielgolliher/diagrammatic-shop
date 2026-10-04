@@ -16,7 +16,7 @@ const FONTS = { italic: opentype.parse(italicTTF), roman: opentype.parse(romanTT
 const OUT = { italic: new Outliner(FONTS.italic), roman: new Outliner(FONTS.roman), sc: new Outliner(FONTS.sc) };
 // read every printable glyph now, at start-up, so no request pays for it
 for (const o of Object.values(OUT)) for (let c = 32; c < 127; c++) o.glyph(String.fromCharCode(c));
-for (const ch of '’‘“”…—–·éèàçñöüï') OUT.italic.glyph(ch);
+for (const o of Object.values(OUT)) for (const ch of '’‘“”…—–·éèàçñöüï') o.glyph(ch);
 
 export const measure = (s, size, style = 'italic') => (OUT[style] || OUT.italic).width(s, size);
 const outline = (s, x, y, size, rot, style = 'italic') => (OUT[style] || OUT.italic).group(s, x, y, size, rot);
@@ -44,6 +44,6 @@ export async function renderPrint(env, item) {
       toPath: (s, x, y, size, rot) => outline(s, x, y, size, rot, 'italic'),
     }),
   };
-  const out = compose({ product, opts, W, H, inches, diagram, caption: item.caption ? item.sentence : null, plateNo: 'I', text, measure });
+  const out = compose({ product, opts, W, H, inches, diagram, caption: item.caption ? item.sentence : null, attribution: item.caption ? item.attribution : null, plateNo: 'I', text, measure });
   return out.svg;
 }
