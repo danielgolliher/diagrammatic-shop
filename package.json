@@ -1,0 +1,9 @@
+{
+  "name": "diagrammatic-shop",
+  "private": true,
+  "type": "module",
+  "description": "Diagrammatic & Co. — sentences diagrammed and made to order",
+  "scripts": {
+    "test": "cd worker && node test/e2e.mjs"
+  }
+}

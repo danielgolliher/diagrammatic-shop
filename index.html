@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Diagrammatic &amp; Co.</title>
+<meta name="description" content="Any sentence, diagrammed in the manner of the old grammars and made to order as a framed plate, a tee, a card, a mug, a tote or a sticker.">
+<meta property="og:title" content="Diagrammatic & Co. — Fine Sentences, Diagrammed">
+<meta property="og:description" content="Commission a Reed–Kellogg diagram of any sentence, made to order.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%231b1712'/%3E%3Cg stroke='%23f8f4eb' stroke-width='3' stroke-linecap='round' fill='none'%3E%3Cpath d='M8 32h48M30 18v22M44 20l-6 12M16 32l8 14'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preload" href="fonts/fell-english-italic.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fell-english.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/shop.css">
+</head>
+<body>
+
+<div class="notice"><span>Each piece made to order</span><span class="dot">·</span><span>Shipped worldwide</span><span class="extra"><span class="dot">·</span><span>Diagrams after Reed &amp; Kellogg, 1877</span></span></div>
+
+<header class="masthead">
+  <div class="mast-inner">
+    <nav class="nav left" aria-label="Sections">
+      <a href="#atelier">The Atelier</a>
+      <a href="#collection">The Collection</a>
+    </nav>
+    <a class="wordmark" href="#top" aria-label="Diagrammatic and Company, home">
+      <span class="wm">Diagrammatic</span>
+      <span class="co"><span class="amp">&amp;</span> Co. · Purveyors of Fine Sentences</span>
+    </a>
+    <nav class="nav right" aria-label="Shop">
+      <a href="#method" class="hide-m">Our Method</a>
+      <button class="bag-btn" id="open-bag" type="button" aria-haspopup="dialog">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><path d="M5 8h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 8V6.5a3 3 0 0 1 6 0V8"/></svg>
+        Bag <span class="bag-count" id="bag-count">(0)</span>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <section class="hero">
+    <div class="wrap">
+      <p class="eyebrow">Commissions taken daily</p>
+      <h1 class="lede">Any sentence, drawn as the grammarians drew it.</h1>
+      <p class="sub">A vow, a verse, a first line, a family motto. Write it below and we will diagram it in the Reed–Kellogg manner, then make it into something to keep.</p>
+      <form class="compose" id="compose" autocomplete="off">
+        <label for="sentence" class="vh">Your sentence</label>
+        <input id="sentence" name="sentence" maxlength="220" spellcheck="true" placeholder="Write your sentence here…" value="The old man walked slowly to the village.">
+        <button class="btn" type="submit">Compose</button>
+      </form>
+      <p class="compose-error" id="compose-error" role="alert"></p>
+      <p class="hint">Or begin with <button type="button" data-try="Call me Ishmael.">Call me Ishmael.</button> · <button type="button" data-try="We hold these truths to be self-evident.">We hold these truths…</button> · <button type="button" data-try="I love you more than words can say.">I love you more than words can say.</button></p>
+    </div>
+  </section>
+
+  <section class="atelier" id="atelier" aria-labelledby="atelier-title">
+    <div class="wrap">
+      <p class="eyebrow">The Atelier</p>
+      <h2 class="title" id="atelier-title">Choose Its Setting</h2>
+      <div class="ornament"><i>✦</i></div>
+      <div class="atelier-grid">
+        <div class="vitrine">
+          <div class="stage" id="stage"><div class="loading">Setting the type…</div></div>
+          <div class="thumbs" id="thumbs" role="group" aria-label="Products"></div>
+          <div class="toggle-figure"><button type="button" id="toggle-figure">View the figure alone</button></div>
+        </div>
+        <div class="panel" id="panel" aria-live="polite"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="collection" id="collection" aria-labelledby="collection-title">
+    <div class="wrap">
+      <p class="eyebrow">The Collection</p>
+      <h2 class="title" id="collection-title">Your Sentence, Six Ways</h2>
+      <div class="ornament"><i>✦</i></div>
+      <div class="grid" id="grid"></div>
+    </div>
+  </section>
+
+  <section class="method" id="method" aria-labelledby="method-title">
+    <div class="wrap">
+      <p class="eyebrow">Our Method</p>
+      <h2 class="title" id="method-title">Composed, Printed, Posted</h2>
+      <div class="ornament"><i>✦</i></div>
+      <div class="steps">
+        <div class="step"><div class="num">i.</div><h3>Composed</h3><p>Your sentence is parsed and drawn by hand-set rules: subject from predicate, every modifier on its slant, every clause on its own line.</p></div>
+        <div class="step"><div class="num">ii.</div><h3>Printed</h3><p>Each piece is made to order by our printing partner on fine papers, combed cotton and glazed ceramic. Nothing waits in a warehouse.</p></div>
+        <div class="step"><div class="num">iii.</div><h3>Posted</h3><p>It usually leaves the printer within two to five business days and arrives about a week later, wherever you are.</p></div>
+      </div>
+      <p class="quote">Alonzo Reed and Brainerd Kellogg taught generations of schoolchildren to see a sentence as a structure, each word on its own line. We draw yours the same way.<cite>The method of Higher Lessons in English, 1877</cite></p>
+    </div>
+  </section>
+</main>
+
+<footer class="foot">
+  <a class="wordmark" href="#top"><span class="wm">Diagrammatic</span><span class="co"><span class="amp">&amp;</span> Co.</span></a>
+  <nav aria-label="Policies">
+    <a href="policies.html#shipping">Shipping</a>
+    <a href="policies.html#returns">Returns</a>
+    <a href="policies.html#privacy">Privacy</a>
+    <a href="policies.html#terms">Terms</a>
+    <a href="policies.html#contact">Enquiries</a>
+    <a href="https://danielgolliher.github.io/diagrammatic/">The free diagrammer</a>
+  </nav>
+  <p class="small">Payments are taken securely by Stripe; we never see your card. Pieces are printed and posted to order by Printful. Set in the Fell Types. © MMXXVI.</p>
+</footer>
+
+<div class="scrim" id="scrim"></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="bag-title" aria-hidden="true">
+  <header><h2 id="bag-title">Your Bag</h2><button class="close" id="close-bag" type="button" aria-label="Close the bag">×</button></header>
+  <div class="lines" id="lines"></div>
+  <footer id="bag-foot"></footer>
+</aside>
+
+<script type="module" src="js/shop.js"></script>
+</body>
+</html>

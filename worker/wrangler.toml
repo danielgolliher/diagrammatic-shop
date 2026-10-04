@@ -1,0 +1,31 @@
+# Diagrammatic & Co. — the counting-house (Cloudflare Worker)
+name = "diagrammatic-shop"
+main = "src/index.js"
+compatibility_date = "2024-09-23"
+
+[vars]
+SHOP_NAME = "Diagrammatic & Co."
+SITE_URL = "https://danielgolliher.github.io/diagrammatic-shop/"
+ALLOWED_ORIGINS = "https://danielgolliher.github.io"
+# auto: place real Printful orders only when the Stripe key is live; test-mode payments make Printful drafts
+PRINTFUL_CONFIRM = "auto"
+AUTO_REFUND = "true"
+STRIPE_AUTOMATIC_TAX = "false"
+CONTACT_EMAIL = ""
+BLOCKED_WORDS = ""
+# Secrets (set with `wrangler secret put`, never committed):
+#   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, PRINTFUL_API_KEY, PRINT_SIGNING_SECRET
+# Optional var: PRINTFUL_STORE_ID (only if your Printful token can see more than one store)
+
+[triggers]
+crons = ["17 4 * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "diagrammatic-shop"
+database_id = "REPLACE_WITH_D1_DATABASE_ID"
+
+[[rules]]
+type = "Data"
+globs = ["**/*.ttf"]
+fallthrough = false

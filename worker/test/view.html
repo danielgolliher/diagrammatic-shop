@@ -1,0 +1,7 @@
+<!doctype html><meta charset="utf-8"><title>print files</title>
+<style>body{background:#999;margin:0;padding:20px;font:14px sans-serif} figure{background:repeating-conic-gradient(#ccc 0 25%,#eee 0 50%) 0 0/20px 20px;display:inline-block;margin:10px;vertical-align:top} img{display:block;max-width:560px;max-height:560px} figcaption{background:#fff;padding:4px}</style>
+<div id="g"></div>
+<script>
+const files = new URLSearchParams(location.search).get('f').split(',');
+for (const f of files) document.getElementById('g').insertAdjacentHTML('beforeend', `<figure><img src="out/${f}"><figcaption>${f}</figcaption></figure>`);
+</script>
