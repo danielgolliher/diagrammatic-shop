@@ -1,3 +1,5 @@
+// Checks that sentences diagram completely: no unplaced words, every word drawn.
+//   node test/cand-check.mjs -q          check the whole Catalogue, listing only failures
 import opentype from 'opentype.js'
 import { readFileSync } from 'fs'
 import { tagText } from '../../engine/tagger.js'
@@ -6,7 +8,9 @@ import { Draughtsman, toSVG } from '../../engine/layout.js'
 import { parseDiagram, checkWords, checkCoverage } from '../../shared/svgprims.js'
 const italic = opentype.loadSync(new URL('../fonts/IMFeENit28P.ttf', import.meta.url).pathname)
 const pen = new Draughtsman((s, size) => italic.getAdvanceWidth(s, size))
-const C = JSON.parse(readFileSync(process.argv[2], 'utf8'))
+// with no file given, check every sentence in the Catalogue
+const file = process.argv.slice(2).find(a => !a.startsWith('-'))
+const C = file ? JSON.parse(readFileSync(file, 'utf8')) : (await import('../../shared/catalogue.js')).CATALOGUE.map(e => ({ text: e.text }))
 let ok = 0
 for (const c of C) {
   resetIds(); const sens = tagText(c.text); const sen = sens[0]
