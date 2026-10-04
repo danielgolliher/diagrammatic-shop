@@ -29,10 +29,16 @@ function plate(art, opts, orient) {
   const id = 'm' + (SEQ++);
   const frame = { Black: ['#1d1b19', '#3a3632', '#0e0d0c'], White: ['#f3f1eb', '#ffffff', '#d6d1c6'], 'Red Oak': ['#a36b44', '#c08a60', '#7a4a2c'] }[opts.frame] || ['#1d1b19', '#3a3632', '#0e0d0c'];
   const land = orient === 'landscape';
-  const fw = land ? 440 : 330, fh = land ? 330 : 440;
-  const x = 300 - fw / 2, y = (land ? 268 : 262) - fh / 2;
+  // the mat's window takes the print's own proportions, so the print fills it edge to edge
+  const vb = art.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+  const ar = vb ? Number(vb[1]) / Number(vb[2]) : (land ? 4 / 3 : 3 / 4);
   const b = 20, m = land ? 38 : 34;                 // frame and mat widths
-  const ix = x + b + m, iy = y + b + m, iw = fw - 2 * (b + m), ih = fh - 2 * (b + m);
+  const maxW = land ? 330 : 234, maxH = land ? 250 : 330;
+  let iw = maxW, ih = iw / ar;
+  if (ih > maxH) { ih = maxH; iw = ih * ar; }
+  const fw = iw + 2 * (b + m), fh = ih + 2 * (b + m);
+  const x = 300 - fw / 2, y = (land ? 268 : 262) - fh / 2;
+  const ix = x + b + m, iy = y + b + m;
   const grain = opts.frame === 'Red Oak'
     ? Array.from({ length: 9 }, (_, k) => `<path d="M${x + 3} ${y + 6 + k * (fh - 12) / 8} q${fw / 3} ${k % 2 ? 3 : -3} ${fw - 6} 0" stroke="#8b5534" stroke-width=".6" fill="none" opacity=".35"/>`).join('')
     : '';
