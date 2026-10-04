@@ -199,17 +199,23 @@ async function fulfil(env, session, origin) {
     },
   };
   const confirm = confirmOrders(env);
-  const res = await printful.createOrder(env, order, confirm);
   const now = Date.now();
+  // already placed (a retried delivery, or a ledger write that failed after Printful accepted)?
+  const placed = await printful.findByExternalId(env, draftId).catch(() => null);
+  const res = placed ? { ok: false, duplicate: true, id: String(placed.id) } : await printful.createOrder(env, order, confirm);
   const save = (status, printfulId, message) => env.DB.prepare(
     'INSERT INTO orders (session_id, draft_id, status, printful_id, message, updated) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT(session_id) DO UPDATE SET status = excluded.status, printful_id = excluded.printful_id, message = excluded.message, updated = excluded.updated',
   ).bind(session.id, draftId, status, printfulId || null, message || null, now).run();
 
   if (res.ok || res.duplicate) {
     await save(confirm ? 'submitted' : 'draft', res.id, res.duplicate ? 'already placed' : null);
-    return { status: confirm ? 'submitted' : 'draft', printful: res.id };
+    return { status: confirm ? 'submitted' : 'draft', printful: res.id, duplicate: !!res.duplicate };
   }
   if (res.transient) return { retry: true, message: res.message };
+  // before refunding, make certain Printful really has no order for this payment
+  const after = await printful.findByExternalId(env, draftId).catch(() => 'unknown');
+  if (after === 'unknown') return { retry: true, message: 'could not confirm the refusal' };
+  if (after) { await save(confirm ? 'submitted' : 'draft', String(after.id), 'found after refusal'); return { status: 'submitted', printful: String(after.id) }; }
   // a permanent refusal: give the customer their money back rather than leave them waiting
   let refunded = false;
   if ((env.AUTO_REFUND || 'true') !== 'false' && session.payment_intent) {

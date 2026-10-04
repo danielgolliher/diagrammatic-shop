@@ -61,7 +61,7 @@ export async function printArea(env, productId, variantId, placement) {
 }
 
 export async function createOrder(env, order, confirm) {
-  const res = await call(env, 'POST', `/orders${confirm ? '?confirm=1' : ''}`, order);
+  const res = await call(env, 'POST', `/orders${confirm ? '?confirm=true' : ''}`, order);
   if (res.ok) return { ok: true, id: String(res.data.result && res.data.result.id) };
   if (/external[ _]?id/i.test(res.message) && /(exist|already|taken|unique)/i.test(res.message)) return { ok: false, duplicate: true, id: null };
   return { ok: false, transient: res.transient || res.status === 401 || res.status === 403, message: res.message, status: res.status };
@@ -70,4 +70,10 @@ export async function createOrder(env, order, confirm) {
 export async function getOrder(env, id) {
   const res = await call(env, 'GET', `/orders/${encodeURIComponent(id)}`);
   return res.ok ? res.data.result : null;
+}
+
+// an order we placed earlier, found by the external id we gave it (or null)
+export async function findByExternalId(env, externalId) {
+  const res = await call(env, 'GET', `/orders/@${encodeURIComponent(externalId)}`);
+  return res.ok && res.data.result ? res.data.result : null;
 }

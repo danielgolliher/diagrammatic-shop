@@ -168,6 +168,14 @@ async function main() {
     st = await mockState();
     ok(r.ok && w.duplicate && Object.keys(st.orders).length === 1, 'webhook replay does not place a second order');
 
+    // the ledger lost its record after Printful accepted: a replay must find the order, not repeat or refund it
+    execSync(`npx wrangler d1 execute diagrammatic-shop --local --command "DELETE FROM orders"`, { cwd: root, stdio: 'ignore' });
+    ev = signedEvent(paid);
+    r = await post('/api/stripe/webhook', ev.payload, { 'stripe-signature': ev.header });
+    w = await r.json();
+    st = await mockState();
+    ok(r.ok && w.duplicate && Object.keys(st.orders).length === 1 && st.refunds.length === 0, 'a lost ledger entry is recovered from Printful, not re-ordered or refunded');
+
     console.log('\nOrder status');
     r = await fetch(API + '/api/order?session_id=' + sess.id);
     const os = await r.json();

@@ -7,7 +7,7 @@ The website, the payment and fulfilment code, the print-file renderer and the te
 | Service | What it does | What you need from it |
 | --- | --- | --- |
 | **Stripe** (stripe.com) | Takes card payments; you are paid out to your bank. | Complete *account activation* (business details and bank account). Copy your **secret key** from Developers → API keys. Start with the test key `sk_test_…`. |
-| **Printful** (printful.com) | Prints, packs and posts each order. | Create a store of type **"Manual order platform / API"**. Add a **billing method** (Billing → Billing methods), because Printful charges you its wholesale cost for each order. Create a **private token** at developers.printful.com → *Your tokens*, scoped to that store, with order, shipping-rate, file and catalogue access. |
+| **Printful** (printful.com) | Prints, packs and posts each order. | Create a store of type **"Manual order platform / API"**. Add a **billing method** (Billing → Billing methods), because Printful charges you its wholesale cost for each order. Create a **private token** at developers.printful.com → *Your tokens*, limited to that store, with **all scopes** selected. The Worker uses orders, shipping rates, the file library and the mockup generator's print-file sizes. |
 | **Cloudflare** (cloudflare.com) | Runs the small "counting-house" service that connects the two. The free plan is enough. | Just the account. The script signs you in. |
 
 ## 2. Run the setup script

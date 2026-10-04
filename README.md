@@ -53,7 +53,7 @@ A small boutique where anyone can write a sentence, see it diagrammed the way Re
 ```bash
 python3 tools/serve.py 8772                 # the site, uncached, at http://localhost:8772
 cd worker && npm install
-node test/e2e.mjs                           # 39 checks: quote → checkout → webhook → Printful → print files
+node test/e2e.mjs                           # 40 checks: quote → checkout → webhook → Printful → print files
 ./test/dev.sh                               # Worker + stand-in Stripe/Printful for trying the shop by hand,
                                             # then open http://localhost:8772/?api=http://127.0.0.1:8787
 ```

@@ -135,7 +135,7 @@ const server = http.createServer(async (req, res) => {
       } });
     }
     if (pp.startsWith('/orders') && req.method === 'POST') {
-      const confirm = url.searchParams.get('confirm') === '1';
+      const confirm = ['1', 'true'].includes(url.searchParams.get('confirm'));
       const o = JSON.parse(raw);
       for (const k of ['external_id', 'recipient', 'items']) if (!o[k]) return send(res, 400, { code: 400, error: { message: `Missing ${k}` } });
       if (Object.values(state.orders).some(x => x.external_id === o.external_id)) return send(res, 400, { code: 400, error: { message: 'Order with this External ID already exists' } });
@@ -157,7 +157,8 @@ const server = http.createServer(async (req, res) => {
     }
     const om = pp.match(/^\/orders\/(.+)$/);
     if (om && req.method === 'GET') {
-      const o = state.orders[om[1]];
+      const key = decodeURIComponent(om[1]);
+      const o = key.startsWith('@') ? Object.values(state.orders).find(x => x.external_id === key.slice(1)) : state.orders[key];
       return o ? send(res, 200, { code: 200, result: { id: o.id, status: o.status, shipments: [] } }) : send(res, 404, { code: 404, error: { message: 'Not found' } });
     }
     return send(res, 404, { code: 404, error: { message: 'mock printful: no route ' + pp } });
