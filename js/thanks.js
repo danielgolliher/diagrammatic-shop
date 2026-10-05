@@ -29,7 +29,7 @@ function show(o) {
   const rows = [];
   for (const it of o.items || []) {
     const p = byId[it.product];
-    rows.push(`<div class="row"><span>${it.qty} × ${esc(p ? p.short : it.product)}</span><span style="text-align:right"><i>${esc(it.sentence)}</i><br><small style="color:var(--ink-3)">${esc(p ? optionLabel(p, it.opts) : '')}</small></span></div>`);
+    rows.push(`<div class="row"><span>${it.qty} × ${esc(p ? p.short : it.product)}</span><span style="text-align:right"><i>${esc(it.sentence)}</i><br><small style="color:var(--ink-3)">${esc(p ? optionLabel(p, it.opts) : '')}${it.note ? ' · with the Grammarian’s Note' : ''}</small></span></div>`);
   }
   if (o.total != null) rows.push(`<div class="row"><span>Total paid</span><span>${money(o.total)}</span></div>`);
   for (const s of o.shipments || []) rows.push(`<div class="row"><span>Tracking</span><span>${esc(s.carrier || '')} ${s.url ? `<a href="${esc(s.url)}" target="_blank" rel="noopener">${esc(s.tracking || 'Follow the parcel')}</a>` : esc(s.tracking || '')}</span></div>`);

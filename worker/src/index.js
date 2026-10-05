@@ -12,6 +12,7 @@
 import { byId, lookup, optionLabel, LIMITS, CURRENCY } from '../../shared/catalog.js';
 import { byEntry } from '../../shared/catalogue.js';
 import { parseDiagram, checkWords, checkCoverage, DiagramError } from '../../shared/svgprims.js';
+import { noteRuns, checkNote, NoteError } from '../../shared/note.js';
 import * as stripe from './stripe.js';
 import * as printful from './printful.js';
 import { renderPrint } from './print.js';
@@ -45,7 +46,7 @@ export default {
       for (const [k, v] of Object.entries(cors)) res.headers.set(k, v);
       return res;
     } catch (e) {
-      const status = e.status || (e instanceof DiagramError ? 400 : 500);
+      const status = e.status || (e instanceof DiagramError || e instanceof NoteError ? 400 : 500);
       if (status >= 500) console.error(e.stack || e);
       return json({ error: status >= 500 ? 'Something went amiss in the counting-house.' : e.message }, status, cors);
     }
@@ -123,9 +124,15 @@ async function checkout(request, env, url) {
     // a sentence from the Catalogue may carry its source; the wording must match exactly
     const entry = raw.source && byEntry[String(raw.source)];
     const attribution = entry && entry.text === sentence && raw.cite !== false && raw.caption !== false ? entry.cite : null;
+    // the Grammarian's Note, where the piece takes one: its words must be the sentence's or the grammarian's
+    let note = null;
+    if (raw.note && found.product.art.note) {
+      try { note = noteRuns(raw.note); checkNote(note, sentence); }
+      catch (e) { throw new HttpError(400, `Item ${i + 1}: ${e.message}.`); }
+    }
     items.push({
       product: found.product.id, opts: found.opts, key: found.key, pf: found.variant.pf, price: found.variant.price,
-      qty, sentence, caption: raw.caption !== false, attribution, svg,
+      qty, sentence, caption: raw.caption !== false, attribution, note, svg,
     });
   }
 
@@ -140,7 +147,7 @@ async function checkout(request, env, url) {
     draftId, items, rate, dest,
     successUrl: `${site}thanks.html?session_id={CHECKOUT_SESSION_ID}`,
     cancelUrl: `${site}#bag`,
-    describe: it => ({ name: `${byId[it.product].name} — ${optionLabel(byId[it.product], it.opts)}`, description: `“${it.sentence.slice(0, 180)}${it.sentence.length > 180 ? '…' : ''}”` }),
+    describe: it => ({ name: `${byId[it.product].name} — ${optionLabel(byId[it.product], it.opts)}${it.note ? ' · with the Grammarian’s Note' : ''}`, description: `“${it.sentence.slice(0, 180)}${it.sentence.length > 180 ? '…' : ''}”` }),
   });
   return json({ url: session.url, id: session.id });
 }
@@ -182,7 +189,7 @@ async function fulfil(env, session, origin) {
     const p = byId[it.product];
     items.push({
       variant_id: it.pf, quantity: it.qty, retail_price: (it.price / 100).toFixed(2),
-      name: `${p.name} — ${optionLabel(p, it.opts)}`.slice(0, 120),
+      name: `${p.name} — ${optionLabel(p, it.opts)}${it.note ? ' · with note' : ''}`.slice(0, 120),
       files: [{ type: p.placement, url: `${origin}/print/${draftId}/${n}.svg?sig=${await sign(n)}` }],
     });
   }
@@ -281,7 +288,7 @@ async function orderStatus(url, env) {
   }
   if (session && session.metadata && session.metadata.draft_id) {
     const d = await env.DB.prepare('SELECT data FROM drafts WHERE id = ?').bind(session.metadata.draft_id).first();
-    if (d) out.items = JSON.parse(d.data).items.map(it => ({ product: it.product, opts: it.opts, qty: it.qty, sentence: it.sentence, cite: it.attribution || null }));
+    if (d) out.items = JSON.parse(d.data).items.map(it => ({ product: it.product, opts: it.opts, qty: it.qty, sentence: it.sentence, cite: it.attribution || null, note: !!it.note }));
   }
   return json(out);
 }

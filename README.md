@@ -6,6 +6,8 @@ A small boutique where anyone can write a sentence, see it diagrammed the way Re
 
 **The Catalogue** (`catalogue.html`, data in `shared/catalogue.js`) offers 78 sentences from the American founding documents and public-domain literature. Each was checked word for word against its source and is diagrammed completely. A catalogue piece can be printed with its source beneath it; the Worker looks the citation up in the catalogue itself and adds it only when the wording matches exactly.
 
+**The Grammarian's Note.** On the framed plate, the card, the tee and the tote, a customer can add the sentence's analysis in words, set small beneath the figure in the manner of the old grammars ("Analysis.—This is a simple declarative sentence…"). The browser writes the note with the engine's analysis. The Worker accepts only its own markup (italics and clause labels), and every word must be a word of the sentence or one of the grammarian's fixed vocabulary (`shared/note.js`). The mug and the sticker have no room for a note.
+
 **Shop:** https://danielgolliher.github.io/diagrammatic-shop/
 **To take real orders:** see [SETUP.md](SETUP.md).
 
@@ -46,7 +48,7 @@ A small boutique where anyone can write a sentence, see it diagrammed the way Re
 | `catalogue.html`, `js/catalogue.js` | The Catalogue: browse, search and commission famous sentences |
 | `thanks.html`, `js/thanks.js` | Order status after payment |
 | `policies.html` | Shipping, returns, privacy, terms |
-| `shared/` | Catalogue, SVG validation, artwork composition (used by both the site and the Worker) |
+| `shared/` | Catalogue, SVG and note validation, artwork composition (used by both the site and the Worker) |
 | `engine/` | The diagram engine (tagger, parser, layout, analysis) |
 | `worker/` | The Cloudflare Worker, D1 schema, and end-to-end tests with stand-in Stripe and Printful services |
 | `setup.sh` | One-command setup once the accounts exist |
@@ -56,7 +58,8 @@ A small boutique where anyone can write a sentence, see it diagrammed the way Re
 ```bash
 python3 tools/serve.py 8772                 # the site, uncached, at http://localhost:8772
 cd worker && npm install
-node test/e2e.mjs                           # 46 checks: quote → checkout → webhook → Printful → print files
+node test/e2e.mjs                           # 55 checks: quote → checkout → webhook → Printful → print files
+node test/cand-check.mjs -q                 # every Catalogue sentence diagrams in full, and its note passes
 ./test/dev.sh                               # Worker + stand-in Stripe/Printful for trying the shop by hand,
                                             # then open http://localhost:8772/?api=http://127.0.0.1:8787
 ```

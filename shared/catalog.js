@@ -33,7 +33,7 @@ export const PRODUCTS = [
     // nominal print area (inches) for previews; the worker uses Printful's real print file size
     area: v => ({ '12″×16″': [12, 16], '16″×20″': [16, 20], '18″×24″': [18, 24] }[v.size]),
     rotate: true,           // a wide sentence turns the plate to landscape
-    art: { bg: 'full', box: [0.1, 0.12, 0.8, 0.66], caption: true, fig: true, mark: true, maxText: 0.075 },
+    art: { bg: 'full', box: [0.1, 0.12, 0.8, 0.66], caption: true, fig: true, mark: true, maxText: 0.075, note: true, noteBox: [0.09, 0.08, 0.82, 0.8] },
     ink: () => 'dark',
   },
   {
@@ -56,7 +56,7 @@ export const PRODUCTS = [
       Black: { XS: 9527, S: 4016, M: 4017, L: 4018, XL: 4019, '2XL': 4020, '3XL': 5295 },
     }, { XS: 3800, S: 3800, M: 3800, L: 3800, XL: 3800, '2XL': 4000, '3XL': 4200 }),
     area: () => [12, 16],
-    art: { bg: null, box: [0.1, 0.05, 0.8, 0.5], caption: true, fig: false, mark: false, maxText: 0.065, top: true },
+    art: { bg: null, box: [0.1, 0.05, 0.8, 0.5], caption: true, fig: false, mark: false, maxText: 0.065, top: true, note: true, noteBox: [0.1, 0.05, 0.8, 0.7] },
     ink: v => (v.color === 'Black' ? 'light' : 'dark'),
     cloth: v => ({ Natural: '#efe6d1', White: '#fbfbf9', Black: '#1c1b1a' }[v.color]),
   },
@@ -72,7 +72,7 @@ export const PRODUCTS = [
     // wholesale ≈ $2.55 / $2.95 / $3.75
     variants: { '4″×6″': { pf: 14457, price: 900 }, '5″×7″': { pf: 14458, price: 1100 }, '5.83″×8.27″': { pf: 14460, price: 1400 } },
     area: v => ({ '4″×6″': [4, 6], '5″×7″': [5, 7], '5.83″×8.27″': [5.83, 8.27] }[v.size]),
-    art: { bg: 'full', box: [0.1, 0.14, 0.8, 0.6], caption: true, fig: true, mark: false, maxText: 0.07 },
+    art: { bg: 'full', box: [0.1, 0.14, 0.8, 0.6], caption: true, fig: true, mark: false, maxText: 0.07, note: true, noteBox: [0.08, 0.08, 0.84, 0.84] },
     ink: () => 'dark',
   },
   {
@@ -102,7 +102,7 @@ export const PRODUCTS = [
     // wholesale ≈ $15.87
     variants: { Oyster: { pf: 10458, price: 4400 }, Black: { pf: 10457, price: 4400 } },
     area: () => [14, 16],
-    art: { bg: null, box: [0.1, 0.18, 0.8, 0.56], caption: true, fig: false, mark: false, maxText: 0.065 },
+    art: { bg: null, box: [0.1, 0.18, 0.8, 0.56], caption: true, fig: false, mark: false, maxText: 0.065, note: true, noteBox: [0.1, 0.1, 0.8, 0.78] },
     ink: v => (v.color === 'Black' ? 'light' : 'dark'),
     cloth: v => ({ Oyster: '#e9e0cd', Black: '#1c1b1a' }[v.color]),
   },

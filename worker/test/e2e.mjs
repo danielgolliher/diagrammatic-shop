@@ -10,6 +10,7 @@ import opentype from 'opentype.js';
 import { tagText } from '../../engine/tagger.js';
 import { parseSentence, resetIds } from '../../engine/parser.js';
 import { Draughtsman, toSVG } from '../../engine/layout.js';
+import { analyse } from '../../engine/analysis.js';
 
 const here = new URL('.', import.meta.url).pathname;
 const root = new URL('..', import.meta.url).pathname;
@@ -27,6 +28,12 @@ function diagram(sentence) {
   resetIds();
   const sen = tagText(sentence)[0];
   return toSVG(pen.sentence(parseSentence(sen.tokens, sen.end)), { title: '' }).svg;
+}
+// …and the Grammarian's Note as the shop window would write it
+function note(sentence) {
+  resetIds();
+  const sen = tagText(sentence)[0];
+  return analyse(parseSentence(sen.tokens, sen.end));
 }
 
 async function waitFor(url, tries = 80) {
@@ -205,6 +212,36 @@ async function main() {
     ok(r.ok && catFiles.length === 3 && catFiles.every(f => f.status === 200), 'print files for catalogue pieces are made');
     const declPlate = readFileSync(here + 'out/' + catFiles[0].name, 'utf8');
     ok(/viewBox="0 0 3600 2400"/.test(declPlate) && declPlate.length > 200000, `the Declaration plate is drawn in full (${(declPlate.length / 1024).toFixed(0)} KB)`);
+
+    console.log('\nThe Grammarian’s Note');
+    const n1 = note(s1);
+    const plain = { product: 'plate', opts: { frame: 'Black', size: '12″×16″' }, qty: 1, sentence: s1, caption: true, svg: diagram(s1) };
+    await bad('a note with words of its own', [{ ...plain, note: n1 + ' Send <i>money</i> to the address below.' }]);
+    await bad('a note with foreign markup', [{ ...plain, note: n1.replace('<i>', '<b>') }]);
+    await bad('a note far too long', [{ ...plain, note: n1.repeat(40) }]);
+    r = await post('/api/checkout', { country: 'US', state: 'NY', items: [
+      { ...plain, note: n1 },
+      plain,
+      { product: 'mug', opts: { size: '11 oz' }, qty: 1, sentence: s1, caption: true, note: n1, svg: diagram(s1) },
+    ] });
+    c = await r.json();
+    ok(r.ok && c.id, 'a plate with its note is accepted');
+    st = await mockState();
+    const ns = st.sessions[c.id];
+    ok(ns && /Grammarian’s Note/.test(ns._params.line_items['0'].price_data.product_data.name) && !/Note/.test(ns._params.line_items['1'].price_data.product_data.name), 'the note is named on the receipt');
+    const npaid = { ...paid, id: ns.id, payment_intent: 'pi_note', metadata: ns.metadata, client_reference_id: ns.client_reference_id };
+    await fetch(MOCK + '/_pay/' + ns.id, { method: 'POST', body: JSON.stringify({ ...ns, ...npaid }) });
+    const os3 = await (await fetch(API + '/api/order?session_id=' + ns.id)).json();
+    ok(os3.items && os3.items[0].note === true && os3.items[1].note === false, 'the order remembers which piece takes the note');
+    ok(os3.items && os3.items[2].note === false, 'a note sent for the mug, which has no room for one, is set aside');
+    ev = signedEvent({ ...ns, ...npaid });
+    r = await post('/api/stripe/webhook', ev.payload, { 'stripe-signature': ev.header });
+    st = await mockState();
+    const noteFiles = st.files.filter(f => f.name.startsWith(ns.metadata.draft_id));
+    ok(r.ok && noteFiles.length === 3 && noteFiles.every(f => f.status === 200), 'print files with and without the note are made');
+    const withNote = readFileSync(here + 'out/' + noteFiles[0].name, 'utf8');
+    const without = readFileSync(here + 'out/' + noteFiles[1].name, 'utf8');
+    ok(!/<text|<script|<image|href=/.test(withNote) && withNote.length > without.length * 1.3, `the note is set in outlines beneath the figure (${(without.length / 1024).toFixed(0)} KB → ${(withNote.length / 1024).toFixed(0)} KB)`);
 
     console.log('\nFailures');
     // Printful refuses permanently → automatic refund

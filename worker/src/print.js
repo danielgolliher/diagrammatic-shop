@@ -44,6 +44,6 @@ export async function renderPrint(env, item) {
       toPath: (s, x, y, size, rot) => outline(s, x, y, size, rot, 'italic'),
     }),
   };
-  const out = compose({ product, opts, W, H, inches, diagram, caption: item.caption ? item.sentence : null, attribution: item.caption ? item.attribution : null, plateNo: 'I', text, measure });
+  const out = compose({ product, opts, W, H, inches, diagram, caption: item.caption ? item.sentence : null, attribution: item.caption ? item.attribution : null, note: item.note || null, plateNo: 'I', text, measure });
   return out.svg;
 }

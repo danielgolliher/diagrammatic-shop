@@ -282,6 +282,9 @@ section { scroll-margin-top: calc(var(--mast-h) + 10px); }
 }
 .check input:checked { background: var(--ink); border-color: var(--ink); }
 .check input:checked::after { transform: scale(1); }
+.read-note { margin-left: 2px; background: none; border: 0; padding: 0; cursor: pointer; font-family: var(--sans); font-size: 12px; color: var(--ink-2); text-decoration: underline; text-underline-offset: 3px; text-decoration-color: var(--line-2); white-space: nowrap; }
+.read-note:hover { color: var(--oxblood); text-decoration-color: currentColor; }
+.check-off { margin: 18px 0 0; font-size: 15px; font-style: italic; color: var(--ink-3); text-wrap: pretty; }
 .buy { display: flex; gap: 10px; margin: 28px 0 0; }
 .qty { display: flex; align-items: stretch; border: 1px solid var(--line-2); border-radius: 999px; background: var(--card); overflow: hidden; }
 .qty button { background: none; border: 0; width: 40px; cursor: pointer; font-family: var(--sans); font-size: 17px; color: var(--ink-2); transition: background .2s, color .2s; }
