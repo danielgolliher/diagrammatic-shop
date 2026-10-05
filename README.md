@@ -4,7 +4,7 @@
 
 A small boutique where anyone can write a sentence, see it diagrammed the way Reed & Kellogg's grammar books drew sentences, and order it as a framed plate, a tee, a correspondence card, a mug, a tote or a sticker. Payment is by Stripe and fulfilment by Printful, with no hand work in between.
 
-**The Catalogue** (`catalogue.html`, data in `shared/catalogue.js`) offers 76 sentences from the American founding documents and public-domain literature. Each was checked word for word against its source and is diagrammed completely. A catalogue piece can be printed with its source beneath it; the Worker looks the citation up in the catalogue itself and adds it only when the wording matches exactly.
+**The Catalogue** (`catalogue.html`, data in `shared/catalogue.js`) offers 78 sentences from the American founding documents and public-domain literature. Each was checked word for word against its source and is diagrammed completely. A catalogue piece can be printed with its source beneath it; the Worker looks the citation up in the catalogue itself and adds it only when the wording matches exactly.
 
 **Shop:** https://danielgolliher.github.io/diagrammatic-shop/
 **To take real orders:** see [SETUP.md](SETUP.md).

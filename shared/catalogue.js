@@ -72,6 +72,15 @@ export const CATALOGUE = [
    "cite": "The Constitution, Article III, 1787"
   },
   {
+   "id": "the-first-amendment-congress-shall-make",
+   "group": "founding",
+   "text": "Congress shall make no law respecting an establishment of religion, or prohibiting the free exercise thereof; or abridging the freedom of speech, or of the press; or the right of the people peaceably to assemble, and to petition the Government for a redress of grievances.",
+   "author": "",
+   "work": "The First Amendment",
+   "year": 1791,
+   "cite": "The First Amendment, 1791"
+  },
+  {
    "id": "the-ninth-amendment-the-enumeration-in",
    "group": "founding",
    "text": "The enumeration in the Constitution, of certain rights, shall not be construed to deny or disparage others retained by the people.",
@@ -96,8 +105,7 @@ export const CATALOGUE = [
    "author": "James Madison",
    "work": "The Federalist No. 51",
    "year": 1788,
-   "cite": "James Madison, The Federalist No. 51, 1788",
-   "featured": true
+   "cite": "James Madison, The Federalist No. 51, 1788"
   },
   {
    "id": "the-federalist-no-51-ambition-must-be",
@@ -173,6 +181,16 @@ export const CATALOGUE = [
    "work": "The Farewell Address",
    "year": 1796,
    "cite": "George Washington, The Farewell Address, 1796"
+  },
+  {
+   "id": "the-gettysburg-address-four-score-and",
+   "group": "american",
+   "text": "Four score and seven years ago our fathers brought forth on this continent, a new nation, conceived in Liberty, and dedicated to the proposition that all men are created equal.",
+   "author": "Abraham Lincoln",
+   "work": "The Gettysburg Address",
+   "year": 1863,
+   "cite": "Abraham Lincoln, The Gettysburg Address, 1863",
+   "featured": true
   },
   {
    "id": "the-gettysburg-address-the-world-will",
