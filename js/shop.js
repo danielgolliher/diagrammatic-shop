@@ -8,6 +8,9 @@ import { mockup, PREVIEW } from './mockups.js';
 import { CONFIG } from './config.js';
 import { COUNTRIES, REGIONS } from './places.js';
 import { measure, textEl, draw, fontsReady } from './draw.js';
+import { enhance } from './ui.js';
+
+enhance();
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -85,10 +88,36 @@ function composeSentence(text, sourceId = null) {
 }
 
 function renderAll() {
+  renderSpecimen(state.drawing);
   renderStage();
   renderThumbs();
   renderPanel();
   renderGrid();
+}
+
+// the plate beside the hero, which follows the sentence as it is written
+const quiet = window.matchMedia('(prefers-reduced-motion: reduce)');
+let shown = '';
+function renderSpecimen(d) {
+  const fig = $('#specimen-fig');
+  if (!fig || !d || d.sentence === shown) return;
+  shown = d.sentence;
+  // drawn a touch larger than life, and never wider than the plate
+  const svg = d.svg.replace(/ width="([\d.]+)" height="([\d.]+)"/, (m, w, h) => ` width="${Math.round(w * 1.65)}" height="${Math.round(h * 1.65)}"`);
+  fig.innerHTML = svg;
+  const el = fig.querySelector('svg');
+  el.setAttribute('aria-label', `The diagram of “${d.sentence}”`);
+  $('#specimen-cap').textContent = d.sentence;
+  if (!quiet.matches && el.animate) el.animate([{ opacity: 0.25, transform: 'translateY(4px)' }, { opacity: 1, transform: 'none' }], { duration: 380, easing: 'cubic-bezier(.22,.61,.36,1)' });
+}
+let typing;
+function previewTyping(text) {
+  clearTimeout(typing);
+  typing = setTimeout(() => {
+    const s = text.replace(/\s+/g, ' ').trim();
+    if (!s || s.length > LIMITS.sentenceChars) return;
+    try { renderSpecimen(draw(s)); } catch (e) { /* keep the last good figure */ }
+  }, 220);
 }
 
 function renderStage() {
@@ -214,7 +243,9 @@ function renderFeatured() {
   const host = $('#featured');
   if (!host) return;
   const picks = CATALOGUE.filter(e => e.featured).slice(0, 6);
+  const fig = e => { try { return draw(e.text).svg.replace(/ width="[\d.]+" height="[\d.]+"/, ''); } catch (err) { return ''; } };
   host.innerHTML = picks.map(e => `<article class="entry"><a class="entry-link" href="?s=${encodeURIComponent(e.text)}&src=${encodeURIComponent(e.id)}" data-entry="${esc(e.id)}">
+      <div class="entry-fig" aria-hidden="true">${fig(e)}</div>
       <p class="entry-text">${esc(e.text)}</p><p class="entry-cite">${esc(e.cite)}</p><span class="entry-cta">Commission this sentence <span aria-hidden="true">→</span></span></a></article>`).join('');
   host.querySelectorAll('[data-entry]').forEach(a => a.addEventListener('click', ev => {
     ev.preventDefault();
@@ -225,7 +256,12 @@ function renderFeatured() {
 }
 
 // --- the bag -------------------------------------------------------------
-function saveBag() { store.set('dco-bag', bag); $('#bag-count').textContent = `(${bag.reduce((n, it) => n + it.qty, 0)})`; }
+function saveBag() {
+  store.set('dco-bag', bag);
+  const n = bag.reduce((k, it) => k + it.qty, 0);
+  const c = $('#bag-count');
+  c.textContent = n; c.dataset.n = n;
+}
 
 function addToBag() {
   const p = byId[state.product];
@@ -372,6 +408,7 @@ async function boot() {
   if (!composeSentence(state.sentence, params.get('src'))) composeSentence('The old man walked slowly to the village.');
   saveBag();
 
+  $('#sentence').addEventListener('input', e => previewTyping(e.target.value));
   $('#compose').addEventListener('submit', e => {
     e.preventDefault();
     if (composeSentence($('#sentence').value)) $('#atelier').scrollIntoView({ behavior: 'smooth' });

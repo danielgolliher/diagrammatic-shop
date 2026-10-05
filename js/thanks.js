@@ -13,7 +13,7 @@ function show(o) {
   const shipped = (o.shipments || []).length > 0 || production === 'fulfilled';
   const stage = shipped ? 3 : (STAGE[production] ?? STAGE[o.status] ?? 1);
   if (o.status === 'refunded' || o.status === 'failed') {
-    $('#title').textContent = 'Our Apologies';
+    $('#title').textContent = 'Our apologies.';
     $('#lede').innerHTML = o.status === 'refunded'
       ? 'We were not able to have your order printed, and your payment has been refunded in full. It should appear on your statement within a few days.'
       : 'Something has gone amiss with your order. We have been alerted and will put it right.';

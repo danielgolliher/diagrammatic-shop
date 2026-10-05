@@ -6,49 +6,98 @@
 <title>Policies · Diagrammatic &amp; Co.</title>
 <meta name="description" content="Shipping, returns, privacy and terms for Diagrammatic & Co.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%231b1712'/%3E%3Cg stroke='%23f8f4eb' stroke-width='3' stroke-linecap='round' fill='none'%3E%3Cpath d='M8 32h48M30 18v22M44 20l-6 12M16 32l8 14'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="preload" href="fonts/fell-doublepica.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/fell-english-italic.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="css/shop.css">
 </head>
 <body>
-<header class="masthead">
+<header class="masthead solid">
   <div class="mast-inner">
-    <nav class="nav left"><a href="./">The Shop</a></nav>
+    <nav class="nav left"><a href="./">The Shop</a><a href="catalogue.html">The Catalogue</a></nav>
     <a class="wordmark" href="./"><span class="wm">Diagrammatic</span><span class="co"><span class="amp">&amp;</span> Co. · Purveyors of Fine Sentences</span></a>
     <nav class="nav right"><a href="#contact">Enquiries</a></nav>
   </div>
 </header>
 <main class="page">
-  <p class="eyebrow">The fine print</p>
-  <h1>Our Policies</h1>
-  <div class="ornament"><i>✦</i></div>
-
-  <h2 id="shipping">Shipping</h2>
-  <p>Every piece is made to order. Most leave the printer within two to five business days; framed plates can take a little longer. Delivery then usually takes three to eight business days within the United States, and one to three weeks elsewhere.</p>
-  <p>Shipping is quoted in your bag and shown again at checkout, before you pay. Orders are printed and posted by our fulfilment partner, Printful, from whichever of its facilities is nearest to you. A tracking link is sent when your parcel is on its way.</p>
-  <p>Orders going outside the country they are printed in may be charged import duties or taxes on arrival. These are set by the destination country and are the recipient’s to pay.</p>
-
-  <h2 id="returns">Returns &amp; Replacements</h2>
-  <p>Each piece carries your own sentence, so we cannot take back a piece because you have changed your mind, chosen the wrong size, or found a misspelling in the sentence you wrote. We print the words exactly as they are given, so please read your sentence and its figure carefully before you order.</p>
-  <p>If a piece arrives damaged, faulty or misprinted, write to us within 30 days of delivery with your order details and a photograph, and we will replace it or refund it at no cost to you. Parcels lost in the post are replaced in the same way.</p>
-
-  <h2 id="privacy">Privacy</h2>
-  <p>To make and deliver your order we keep your sentence, the items you chose, your name, shipping address, email address and telephone number. We use them only to fulfil and support your order, and share them only with the companies that make that possible.</p>
-  <p><b>Stripe</b> takes your payment; your card details go directly to Stripe and never reach us. <b>Printful</b> prints and posts your order, so it receives your sentence, its artwork and your shipping details. <b>Cloudflare</b> hosts the small service that passes orders between them, and <b>GitHub</b> hosts this website.</p>
-  <p>We do not sell your information, and this site uses no advertising or tracking cookies. Your bag is kept in your own browser until you check out. Order records are kept for as long as accounting and tax law require. To ask what we hold about you, or to have it corrected or removed where the law allows, write to us.</p>
-
-  <h2 id="terms">Terms</h2>
-  <p>By placing an order you confirm that you are entitled to use the words you submit, and that they infringe no one’s rights. We may decline to print a sentence we consider hateful, obscene, defamatory or infringing; if we decline after you have paid, we will refund you in full.</p>
-  <p>The diagrams are drawn automatically by a set of grammatical rules. A sentence can sometimes be read more than one way, and the figure shows one reading; what you see in the preview is what we print. Colours on screen may differ slightly from colours in print.</p>
-  <p>Prices are in US dollars and include the making of the piece. Shipping, and any sales tax due, are added at checkout before you pay. Promotional codes, where offered, are entered at checkout.</p>
-
-  <h2 id="contact">Enquiries</h2>
-  <p id="contact-line">The quickest way to reach us is to reply to the receipt sent when you order. Please quote your order number.</p>
+  <header class="page-head">
+    <p class="eyebrow">The fine print</p>
+    <h1>Our policies.</h1>
+    <p class="sub">How your piece is made and sent, what happens if it arrives amiss, and what we keep about you.</p>
+  </header>
+  <div class="policy-grid">
+    <nav class="toc" aria-label="On this page">
+      <a href="#shipping">Shipping</a>
+      <a href="#returns">Returns &amp; Replacements</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#terms">Terms</a>
+      <a href="#contact">Enquiries</a>
+    </nav>
+    <article class="prose">
+      <section aria-labelledby="shipping">
+        <h2 id="shipping">Shipping</h2>
+        <p>Every piece is made to order. Most leave the printer within two to five business days; framed plates can take a little longer. Delivery then usually takes three to eight business days within the United States, and one to three weeks elsewhere.</p>
+        <p>Shipping is quoted in your bag and shown again at checkout, before you pay. Orders are printed and posted by our fulfilment partner, Printful, from whichever of its facilities is nearest to you. A tracking link is sent when your parcel is on its way.</p>
+        <p>Orders going outside the country they are printed in may be charged import duties or taxes on arrival. These are set by the destination country and are the recipient’s to pay.</p>
+      </section>
+      <section aria-labelledby="returns">
+        <h2 id="returns">Returns &amp; Replacements</h2>
+        <p>Each piece carries your own sentence, so we cannot take back a piece because you have changed your mind, chosen the wrong size, or found a misspelling in the sentence you wrote. We print the words exactly as they are given, so please read your sentence and its figure carefully before you order.</p>
+        <p>If a piece arrives damaged, faulty or misprinted, write to us within 30 days of delivery with your order details and a photograph, and we will replace it or refund it at no cost to you. Parcels lost in the post are replaced in the same way.</p>
+      </section>
+      <section aria-labelledby="privacy">
+        <h2 id="privacy">Privacy</h2>
+        <p>To make and deliver your order we keep your sentence, the items you chose, your name, shipping address, email address and telephone number. We use them only to fulfil and support your order, and share them only with the companies that make that possible.</p>
+        <p><b>Stripe</b> takes your payment; your card details go directly to Stripe and never reach us. <b>Printful</b> prints and posts your order, so it receives your sentence, its artwork and your shipping details. <b>Cloudflare</b> hosts the small service that passes orders between them, and <b>GitHub</b> hosts this website.</p>
+        <p>We do not sell your information, and this site uses no advertising or tracking cookies. Your bag is kept in your own browser until you check out. Order records are kept for as long as accounting and tax law require. To ask what we hold about you, or to have it corrected or removed where the law allows, write to us.</p>
+      </section>
+      <section aria-labelledby="terms">
+        <h2 id="terms">Terms</h2>
+        <p>By placing an order you confirm that you are entitled to use the words you submit, and that they infringe no one’s rights. We may decline to print a sentence we consider hateful, obscene, defamatory or infringing; if we decline after you have paid, we will refund you in full.</p>
+        <p>The diagrams are drawn automatically by a set of grammatical rules. A sentence can sometimes be read more than one way, and the figure shows one reading; what you see in the preview is what we print. Colours on screen may differ slightly from colours in print.</p>
+        <p>Prices are in US dollars and include the making of the piece. Shipping, and any sales tax due, are added at checkout before you pay. Promotional codes, where offered, are entered at checkout.</p>
+      </section>
+      <section aria-labelledby="contact">
+        <h2 id="contact">Enquiries</h2>
+        <p id="contact-line">The quickest way to reach us is to reply to the receipt sent when you order. Please quote your order number.</p>
+      </section>
+    </article>
+  </div>
 </main>
 <footer class="foot">
-  <a class="wordmark" href="./"><span class="wm">Diagrammatic</span><span class="co"><span class="amp">&amp;</span> Co.</span></a>
-  <p class="small">© MMXXVI.</p>
+  <div class="foot-inner">
+    <div class="foot-brand">
+      <a class="wordmark" href="./"><span class="wm">Diagrammatic</span><span class="co"><span class="amp">&amp;</span> Co. · Purveyors of Fine Sentences</span></a>
+      <p>Any sentence, diagrammed after Reed &amp; Kellogg and made to order.</p>
+    </div>
+    <nav class="foot-col" aria-label="The shop">
+      <h4>The Shop</h4>
+      <a href="./#atelier">The Atelier</a>
+      <a href="./#collection">The Collection</a>
+      <a href="catalogue.html">The Catalogue</a>
+    </nav>
+    <nav class="foot-col" aria-label="Policies">
+      <h4>Policies</h4>
+      <a href="#shipping">Shipping</a>
+      <a href="#returns">Returns &amp; Replacements</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#terms">Terms</a>
+      <a href="#contact">Enquiries</a>
+    </nav>
+  </div>
+  <p class="small"><span>© MMXXVI.</span></p>
 </footer>
 <script type="module">
   import { CONFIG } from './js/config.js';
+  import { enhance } from './js/ui.js';
+  enhance();
+  // mark the section being read in the contents
+  const links = [...document.querySelectorAll('.toc a')];
+  if ('IntersectionObserver' in window) {
+    const io = new IntersectionObserver(es => {
+      for (const e of es) if (e.isIntersecting) links.forEach(a => a.classList.toggle('on', a.hash === '#' + e.target.querySelector('h2').id));
+    }, { rootMargin: '-30% 0px -60% 0px' });
+    document.querySelectorAll('.prose section').forEach(s => io.observe(s));
+  }
   if (CONFIG.contactEmail) {
     const e = CONFIG.contactEmail.replace(/[<>"]/g, '');
     document.getElementById('contact-line').innerHTML = `Write to us at <a href="mailto:${e}">${e}</a>, quoting your order number. We answer within two business days.`;

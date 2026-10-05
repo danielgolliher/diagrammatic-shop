@@ -1,6 +1,9 @@
 // Diagrammatic & Co. — the Catalogue page.
 import { CATALOGUE, GROUPS } from '../shared/catalogue.js';
 import { draw, fontsReady } from './draw.js';
+import { enhance } from './ui.js';
+
+enhance();
 
 const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
@@ -33,7 +36,7 @@ function render() {
   list.innerHTML = groups.map(g => {
     const items = hits.filter(e => e.group === g.id);
     if (!items.length) return '';
-    return `<section class="cat-group" aria-labelledby="g-${g.id}"><header><h2 id="g-${g.id}">${esc(g.name)}</h2><p>${esc(g.note)}</p></header><div class="entries">${items.map(card).join('')}</div></section>`;
+    return `<section class="cat-group" aria-labelledby="g-${g.id}"><header><h2 id="g-${g.id}">${esc(g.name)}</h2><p>${esc(g.note)}</p><span class="n">${items.length} ${items.length === 1 ? 'sentence' : 'sentences'}</span></header><div class="entries">${items.map(card).join('')}</div></section>`;
   }).join('');
   if (ready) observe();
 }
@@ -62,13 +65,18 @@ function tabs() {
     if (group === 'all') u.searchParams.delete('c'); else u.searchParams.set('c', group);
     history.replaceState(null, '', u);
     render();
+    // if the bar has stuck beneath the masthead, bring the top of the list up to meet it
+    const head = $('.cat-head'), mast = $('.masthead');
+    const top = head.offsetTop + head.offsetHeight - (mast ? mast.offsetHeight : 0);
+    if (window.scrollY > top) window.scrollTo({ top, behavior: 'smooth' });
   }));
 }
 
 function bagCount() {
   try {
     const bag = JSON.parse(localStorage.getItem('dco-bag') || '[]');
-    $('#bag-count').textContent = `(${bag.reduce((n, it) => n + (it.qty || 0), 0)})`;
+    const n = bag.reduce((k, it) => k + (it.qty || 0), 0);
+    $('#bag-count').textContent = n; $('#bag-count').dataset.n = n;
   } catch (e) { /* private window */ }
 }
 
